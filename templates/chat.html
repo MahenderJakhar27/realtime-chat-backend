@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Chat Room {{ room_id }}</h2>
+
+<div id="messages"></div>
+
+<input id="messageText" placeholder="Type message">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+const token = localStorage.getItem("token");
+const roomId = "{{ room_id }}";
+let username = "";
+
+// 1. Get current user (for username)
+fetch("/api/profile/", {
+    headers: {"Authorization": "Bearer " + token}
+})
+.then(res => res.json())
+.then(user => {
+    username = user.username;
+});
+
+// 2. Load old messages from DB
+function loadMessages() {
+    fetch(`/api/chat/rooms/${roomId}/messages/`, {
+        headers: {"Authorization": "Bearer " + token}
+    })
+    .then(res => res.json())
+    .then(data => {
+        let box = document.getElementById("messages");
+        box.innerHTML = "";
+        data.forEach(msg => {
+            box.innerHTML += `<p><b>${msg.sender.username}:</b> ${msg.content}</p>`;
+        });
+    });
+}
+
+// 3. WebSocket connection
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/chat/" + roomId + "/"
+);
+
+// 4. Receive real-time messages
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    let box = document.getElementById("messages");
+    box.innerHTML += `<p><b>${data.username}:</b> ${data.message}</p>`;
+};
+
+// 5. Send message
+function sendMessage() {
+    const messageInput = document.getElementById("messageText");
+    const message = messageInput.value;
+
+    if(!message) return;
+
+    // Save to DB via API
+    fetch("/api/chat/messages/send/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            room: roomId,
+            content: message
+        })
+    });
+
+    // Send via WebSocket (real-time)
+    socket.send(JSON.stringify({
+        message: message,
+        username: username
+    }));
+
+    messageInput.value = "";
+}
+
+// Load old messages when page opens
+loadMessages();
+</script>
+
+{% endblock %}

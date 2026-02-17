@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Login</h2>
+
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<script>
+function login() {
+    fetch("/api/token/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.access){
+            localStorage.setItem("token", data.access);
+            window.location.href = "/dashboard/";
+        } else {
+            alert("Login failed");
+        }
+    });
+}
+</script>
+{% endblock %}

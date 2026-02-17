@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>My Chat Rooms</h2>
+
+<button onclick="loadRooms()">Refresh Rooms</button>
+
+<ul id="rooms"></ul>
+
+<h3>Create Room</h3>
+<input id="roomname" placeholder="Room name">
+<input id="userids" placeholder="User IDs (comma separated)">
+<button onclick="createRoom()">Create Room</button>
+
+<script>
+const token = localStorage.getItem("token");
+
+function loadRooms() {
+    fetch("/api/chat/rooms/", {
+        headers: {"Authorization": "Bearer " + token}
+    })
+    .then(res => res.json())
+    .then(data => {
+        let list = document.getElementById("rooms");
+        list.innerHTML = "";
+        data.forEach(room => {
+            let li = document.createElement("li");
+            li.innerText = room.name + " (ID: " + room.id + ")";
+            li.onclick = () => {
+                window.location.href = "/chat/" + room.id + "/";
+            };
+            list.appendChild(li);
+        });
+    });
+}
+
+function createRoom() {
+    const ids = document.getElementById("userids").value
+    .split(",")
+    .map(id => parseInt(id.trim()))
+    .filter(id => !isNaN(id));
+
+
+    fetch("/api/chat/rooms/create/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            name: document.getElementById("roomname").value,
+            user_ids: ids
+        })
+    }).then(loadRooms);
+}
+
+loadRooms();
+</script>
+{% endblock %}
