@@ -29,10 +29,20 @@ class CreateChatRoomSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_ids = validated_data.pop('user_ids')
+        request = self.context.get('request')
+
         room = ChatRoom.objects.create(**validated_data)
-        users = User.objects.filter(id__in=user_ids)
+
+        # Get selected users
+        users = list(User.objects.filter(id__in=user_ids))
+
+        # Always add creator
+        if request and request.user not in users:
+            users.append(request.user)
+
         room.users.set(users)
         return room
+
 
 
 class MessageSerializer(serializers.ModelSerializer):

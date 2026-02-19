@@ -14,6 +14,12 @@ class CreateChatRoomView(generics.CreateAPIView):
     serializer_class = CreateChatRoomSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
 
 # List rooms for logged-in user
 class UserChatRoomsView(generics.ListAPIView):

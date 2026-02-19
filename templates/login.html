@@ -20,13 +20,14 @@ function login() {
     })
     .then(res => res.json())
     .then(data => {
-        if(data.access){
-            localStorage.setItem("token", data.access);
-            window.location.href = "/dashboard/";
-        } else {
-            alert("Login failed");
-        }
-    });
+    if(data.access){
+        localStorage.setItem("token", data.access);
+        localStorage.setItem("username", document.getElementById("username").value); // ✅ add this
+        window.location.href = "/dashboard/";
+    } else {
+        alert("Login failed");
+    }
+});
 }
 </script>
 {% endblock %}

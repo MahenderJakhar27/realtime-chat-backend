@@ -141,3 +141,5 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://latonia-billowy-lucille.ngrok-free.dev']

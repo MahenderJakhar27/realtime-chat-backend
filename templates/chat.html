@@ -3,6 +3,8 @@
 {% block content %}
 <h2>Chat Room {{ room_id }}</h2>
 
+<small id="status" style="color: orange;">Connecting...</small>
+
 <div id="messages"></div>
 
 <input id="messageText" placeholder="Type message">
@@ -10,76 +12,80 @@
 
 <script>
 const token = localStorage.getItem("token");
+const username = localStorage.getItem("username");  // ✅ always ready, no async race
 const roomId = "{{ room_id }}";
-let username = "";
 
-// 1. Get current user (for username)
-fetch("/api/profile/", {
-    headers: {"Authorization": "Bearer " + token}
-})
-.then(res => res.json())
-.then(user => {
-    username = user.username;
-});
+if (!token || !username) window.location.href = "/";
 
-// 2. Load old messages from DB
+// Load old messages
 function loadMessages() {
     fetch(`/api/chat/rooms/${roomId}/messages/`, {
         headers: {"Authorization": "Bearer " + token}
     })
     .then(res => res.json())
     .then(data => {
-        let box = document.getElementById("messages");
+        const box = document.getElementById("messages");
         box.innerHTML = "";
         data.forEach(msg => {
             box.innerHTML += `<p><b>${msg.sender.username}:</b> ${msg.content}</p>`;
         });
+        box.scrollTop = box.scrollHeight;
     });
 }
 
-// 3. WebSocket connection
-const socket = new WebSocket(
-    "ws://" + window.location.host + "/ws/chat/" + roomId + "/"
-);
+// WebSocket
+const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/" + roomId + "/");
 
-// 4. Receive real-time messages
-socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    let box = document.getElementById("messages");
-    box.innerHTML += `<p><b>${data.username}:</b> ${data.message}</p>`;
+socket.onopen = () => {
+    document.getElementById("status").textContent = "Connected ✅";
+    document.getElementById("status").style.color = "green";
+    console.log("WebSocket connected");
 };
 
-// 5. Send message
+socket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    const box = document.getElementById("messages");
+    box.innerHTML += `<p><b>${data.username}:</b> ${data.message}</p>`;
+    box.scrollTop = box.scrollHeight;
+};
+
+socket.onerror = (e) => {
+    document.getElementById("status").textContent = "Connection error ❌";
+    document.getElementById("status").style.color = "red";
+    console.error("WebSocket error:", e);
+};
+
+socket.onclose = (e) => {
+    document.getElementById("status").textContent = "Disconnected ❌ (code: " + e.code + ")";
+    document.getElementById("status").style.color = "red";
+    console.log("WebSocket closed:", e.code, e.reason);
+};
+
 function sendMessage() {
-    const messageInput = document.getElementById("messageText");
-    const message = messageInput.value;
+    const input = document.getElementById("messageText");
+    const message = input.value.trim();
 
-    if(!message) return;
+    if (!message) return;
 
-    // Save to DB via API
-    fetch("/api/chat/messages/send/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-            room: roomId,
-            content: message
-        })
-    });
+    // ✅ Check socket is open before sending
+    if (socket.readyState !== WebSocket.OPEN) {
+        alert("Not connected. Please refresh the page.");
+        return;
+    }
 
-    // Send via WebSocket (real-time)
     socket.send(JSON.stringify({
         message: message,
-        username: username
+        username: username  // ✅ from localStorage, always has value
     }));
 
-    messageInput.value = "";
+    input.value = "";
 }
 
-// Load old messages when page opens
+// Send on Enter key
+document.getElementById("messageText").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+});
+
 loadMessages();
 </script>
-
 {% endblock %}

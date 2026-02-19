@@ -4,16 +4,40 @@
 <h2>My Chat Rooms</h2>
 
 <button onclick="loadRooms()">Refresh Rooms</button>
-
 <ul id="rooms"></ul>
 
 <h3>Create Room</h3>
 <input id="roomname" placeholder="Room name">
-<input id="userids" placeholder="User IDs (comma separated)">
-<button onclick="createRoom()">Create Room</button>
+
+<label style="display:block; margin-top:8px;">Add users:</label>
+<select id="userSelect" multiple style="width:100%; height:120px; margin:5px 0; padding:4px;">
+    <option disabled>Loading users...</option>
+</select>
+<small style="color:#666;">Hold Ctrl (or Cmd on Mac) to select multiple users</small>
+<br>
+<button onclick="createRoom()" style="margin-top:8px;">Create Room</button>
 
 <script>
 const token = localStorage.getItem("token");
+
+if (!token) window.location.href = "/";
+
+function loadUsers() {
+    fetch("/api/users/", {
+        headers: {"Authorization": "Bearer " + token}
+    })
+    .then(res => res.json())
+    .then(users => {
+        const select = document.getElementById("userSelect");
+        select.innerHTML = "";
+        users.forEach(u => {
+            const opt = document.createElement("option");
+            opt.value = u.id;
+            opt.textContent = u.username;
+            select.appendChild(opt);
+        });
+    });
+}
 
 function loadRooms() {
     fetch("/api/chat/rooms/", {
@@ -21,25 +45,29 @@ function loadRooms() {
     })
     .then(res => res.json())
     .then(data => {
-        let list = document.getElementById("rooms");
+        const list = document.getElementById("rooms");
         list.innerHTML = "";
+        if (data.length === 0) {
+            list.innerHTML = "<li style='color:#999'>No rooms yet. Create one below.</li>";
+            return;
+        }
         data.forEach(room => {
-            let li = document.createElement("li");
-            li.innerText = room.name + " (ID: " + room.id + ")";
-            li.onclick = () => {
-                window.location.href = "/chat/" + room.id + "/";
-            };
+            const li = document.createElement("li");
+            const members = room.users.map(u => u.username).join(", ");
+            li.innerHTML = `<b>${room.name}</b> <span style="color:#999;font-size:13px;">(${members})</span>`;
+            li.onclick = () => window.location.href = "/chat/" + room.id + "/";
             list.appendChild(li);
         });
     });
 }
 
 function createRoom() {
-    const ids = document.getElementById("userids").value
-    .split(",")
-    .map(id => parseInt(id.trim()))
-    .filter(id => !isNaN(id));
+    const select = document.getElementById("userSelect");
+    const ids = Array.from(select.selectedOptions).map(o => parseInt(o.value));
+    const name = document.getElementById("roomname").value.trim();
 
+    if (!name) { alert("Please enter a room name."); return; }
+    if (ids.length === 0) { alert("Please select at least one user."); return; }
 
     fetch("/api/chat/rooms/create/", {
         method: "POST",
@@ -47,13 +75,16 @@ function createRoom() {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
         },
-        body: JSON.stringify({
-            name: document.getElementById("roomname").value,
-            user_ids: ids
-        })
-    }).then(loadRooms);
+        body: JSON.stringify({ name: name, user_ids: ids })
+    })
+    .then(res => res.json())
+    .then(() => {
+        document.getElementById("roomname").value = "";
+        loadRooms();
+    });
 }
 
 loadRooms();
+loadUsers();
 </script>
 {% endblock %}
