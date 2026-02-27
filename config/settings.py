@@ -142,6 +142,6 @@ CHANNEL_LAYERS = {
     },
 }
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['realtime-chat-backend-2-n32h.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://realtime-chat-backend-2-n32h.onrender.com']
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
