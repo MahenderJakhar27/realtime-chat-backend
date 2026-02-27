@@ -34,8 +34,9 @@ function loadMessages() {
 }
 
 // WebSocket
-const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/" + roomId + "/");
-
+// CORRECT
+const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+const socket = new WebSocket(protocol + window.location.host + "/ws/chat/" + roomId + "/");
 socket.onopen = () => {
     document.getElementById("status").textContent = "Connected ✅";
     document.getElementById("status").style.color = "green";
