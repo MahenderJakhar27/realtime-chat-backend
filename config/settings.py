@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x5vm=6=dzcvld4!9n4uh!cvb7h^g$%a_t7@g&m$88k!e@3ga&u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -143,3 +143,5 @@ CHANNEL_LAYERS = {
 }
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['https://latonia-billowy-lucille.ngrok-free.dev']
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
