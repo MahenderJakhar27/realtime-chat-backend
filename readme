@@ -59,11 +59,11 @@ It is designed with scalability and modularity in mind and can be extended for p
 
 ## Architecture
 
-```
+
 Client
   ├── REST API → Django + DRF
   └── WebSocket → Django Channels → Redis → Database
-```
+
 
 ---
 
@@ -82,7 +82,7 @@ Client
 
 ## Project Structure
 
-```
+
 realtime-chat-backend/
 │
 ├── chat/              # Chat logic (models, consumers, routing)
@@ -93,7 +93,7 @@ realtime-chat-backend/
 ├── docker-compose.yml
 ├── requirements.txt
 └── manage.py
-```
+
 
 ---
 
@@ -101,10 +101,10 @@ realtime-chat-backend/
 
 ### Clone the repository
 
-```bash
+## bash
 git clone https://github.com/MahenderJakhar27/realtime-chat-backend.git
 cd realtime-chat-backend
-```
+
 
 ---
 
@@ -112,7 +112,7 @@ cd realtime-chat-backend
 
 Create a `.env` file:
 
-```env
+## .env
 SECRET_KEY=your_secret_key
 DEBUG=True
 
@@ -126,23 +126,23 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 
 JWT_SECRET=your_jwt_secret
-```
+
 
 ---
 
 ### Run with Docker
 
-```bash
+##bash
 docker-compose up --build
-```
+
 
 ---
 
 ### Apply migrations
 
-```bash
+## bash
 docker-compose exec web python manage.py migrate
-```
+
 
 ---
 
