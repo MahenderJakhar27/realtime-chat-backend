@@ -1,0 +1,272 @@
+# Real-Time Chat Backend
+
+A scalable real-time chat backend built using Django, Django REST Framework, WebSockets (Django Channels), Redis, JWT Authentication, and Docker.
+
+This project demonstrates how to design a real-time communication system with secure APIs and asynchronous message handling.
+
+---
+
+## Live Deployment
+
+Base URL:
+https://realtime-chat-backend-production-0616.up.railway.app/
+
+WebSocket Endpoint:
+wss://realtime-chat-backend-production-0616.up.railway.app/ws/chat/
+
+---
+
+## Overview
+
+This backend enables real-time messaging using WebSockets while providing REST APIs for authentication and chat management.
+
+It is designed with scalability and modularity in mind and can be extended for production-grade messaging systems.
+
+---
+
+## Features
+
+### Authentication
+
+* JWT-based authentication
+* User registration and login
+* Secure API access
+
+### Real-Time Messaging
+
+* WebSocket-based communication using Django Channels
+* Instant message delivery
+* Room-based chat system
+
+### Chat Management
+
+* One-to-one chat support
+* Message persistence in database
+* Easily extendable to group chats
+
+### Performance
+
+* Redis as channel layer
+* Asynchronous handling using ASGI
+
+### DevOps
+
+* Dockerized setup
+* Docker Compose support
+* Deployment-ready configuration
+
+---
+
+## Architecture
+
+```
+Client
+  ├── REST API → Django + DRF
+  └── WebSocket → Django Channels → Redis → Database
+```
+
+---
+
+## Tech Stack
+
+* Python
+* Django
+* Django REST Framework
+* Django Channels
+* Redis
+* JWT Authentication
+* Docker & Docker Compose
+* PostgreSQL / MySQL
+
+---
+
+## Project Structure
+
+```
+realtime-chat-backend/
+│
+├── chat/              # Chat logic (models, consumers, routing)
+├── users/             # Authentication & user management
+├── core/              # Settings and ASGI configuration
+│
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── manage.py
+```
+
+---
+
+## Installation & Setup
+
+### Clone the repository
+
+```bash
+git clone https://github.com/MahenderJakhar27/realtime-chat-backend.git
+cd realtime-chat-backend
+```
+
+---
+
+### Environment variables
+
+Create a `.env` file:
+
+```env
+SECRET_KEY=your_secret_key
+DEBUG=True
+
+DB_NAME=chat_db
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+JWT_SECRET=your_jwt_secret
+```
+
+---
+
+### Run with Docker
+
+```bash
+docker-compose up --build
+```
+
+---
+
+### Apply migrations
+
+```bash
+docker-compose exec web python manage.py migrate
+```
+
+---
+
+### Create superuser
+
+```bash
+docker-compose exec web python manage.py createsuperuser
+```
+
+---
+
+## Running Locally (Without Docker)
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+Make sure Redis is running locally.
+
+---
+
+## API Usage (cURL Examples)
+
+### Register User
+
+```bash
+curl --location 'https://realtime-chat-backend-production-0616.up.railway.app/api/register/' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "mahender",
+    "email": "test@gmail.com",
+    "password": "12345678"
+}'
+```
+
+---
+
+### Login User
+
+```bash
+curl --location 'https://realtime-chat-backend-production-0616.up.railway.app/api/login/' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "mahender",
+    "password": "12345678"
+}'
+```
+
+---
+
+### Authenticated Request Example
+
+```bash
+curl --location 'https://realtime-chat-backend-production-0616.up.railway.app/api/chats/' \
+--header 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+```
+
+---
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint       | Description       |
+| ------ | -------------- | ----------------- |
+| POST   | /api/register/ | Register user     |
+| POST   | /api/login/    | Login and get JWT |
+
+---
+
+### Chat
+
+| Method | Endpoint       | Description    |
+| ------ | -------------- | -------------- |
+| GET    | /api/chats/    | Get user chats |
+| POST   | /api/messages/ | Send message   |
+
+---
+
+## WebSocket Workflow
+
+1. Client connects to WebSocket endpoint
+2. User joins a chat room
+3. Messages are sent in real-time
+4. Redis distributes messages across consumers
+
+---
+
+## Sample WebSocket Payload
+
+```json
+{
+  "message": "Hello",
+  "sender": "user1",
+  "room": "room_1"
+}
+```
+
+---
+
+## Future Improvements
+
+* Group chat support
+* Typing indicators
+* Read receipts
+* File sharing
+* Push notifications
+* Chat search
+
+---
+
+## Author
+
+Mahender Jakhar
+https://github.com/MahenderJakhar27
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+## Creater 
+
+Mahender Jakhar
