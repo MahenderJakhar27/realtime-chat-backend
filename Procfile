@@ -1,1 +1,1 @@
-web: daphne -b 0.0.0.0 -p $PORT realtime_chat_backend.asgi:application
+web: python manage.py migrate && python init_superuser.py && daphne -b 0.0.0.0 -p $PORT config.asgi:application
